@@ -20,21 +20,22 @@ public class Person implements Comparable {
     /**
      * Konstruktor der Klasse Person.
      * 
-     * Vorbedingungen: alle Parameter, die Referenztypen sind dürfen nicht null sein.
-     * Außerdem muss die Anzahl an Kindern positiv oder gleich 0 sein.
+     * Vorbedingungen: alle Parameter, die Referenztypen sind dürfen nicht null sein. Wenn doch wird eine NullPointerException geworfen.
+     * Außerdem muss die Anzahl an Kindern positiv oder gleich 0 sein. Wenn nicht wird eine IllegalArgumentException geworfen.
      * 
      * Nachbrdingungen: keine.
-     * @param firstName
-     * @param lastName
-     * @param birthDate
-     * @param numberOfChildren 
+     * @param firstName Der Vorname.
+     * @param lastName Der Nachname.
+     * @param birthDate Das Geburtsdatum.
+     * @param numberOfChildren Die Anzahl an Kindern.
      */
     public Person(String firstName, String lastName, LocalDate birthDate, int numberOfChildren) {
         Preconditions.checkNotNull(firstName);
         Preconditions.checkNotNull(lastName);
         Preconditions.checkNotNull(birthDate);
+        Preconditions.checkArgument(!(numberOfChildren < 0), "The number of children must be positive!");
         
-        this.setNumberOfChildren(numberOfChildren);
+        this.numberOfChildren = numberOfChildren;
         
         this.firstName = firstName;
         this.lastName = lastName;
@@ -88,14 +89,12 @@ public class Person implements Comparable {
     /**
      * Setzt die Anzahl an Kindern.
      * 
-     * Vorbedingungen: Die Anzahl an Kindern muss positiv oder gleich 0 sein.
+     * Vorbedingungen: Die Anzahl an Kindern muss positiv oder gleich 0 sein. Wenn nicht wird eine IllegalArgumentException geworfen.
      * Nachbedingungen: keine.
      * @return Vornamen
      */
     public void setNumberOfChildren(int newNumberOfChildren) {
-        if(newNumberOfChildren < 0) {
-            throw new IllegalArgumentException("The number of children must be positive!");
-        }
+        Preconditions.checkArgument(!(newNumberOfChildren < 0), "The number of children must be positive!");
         
         this.numberOfChildren = numberOfChildren;
     }
@@ -103,19 +102,21 @@ public class Person implements Comparable {
     /**
      * Setzt den Nachnamen.
      * 
-     * Vorbedingungen: der neue Nachname darf nicht null sein.
+     * Vorbedingungen: der neue Nachname darf nicht null sein. Wenn doch wird eine NullPointerException geworfen.
      * Nachbedingungen: keine.
      * @return Vornamen
      */
     public void setLastName(String newLastName) {
-        this.lastName = lastName;
+        Preconditions.checkNotNull(newLastName);
+        
+        this.lastName = newLastName;
     }
     
     /**
-     * Vergleicht ein Objekt Person mit dem aktuellen.
+     * Vergleicht das Geburtsdatum eines Objektes Person mit dem aktuellen.
      * 
-     * Vorbedingungen: die übergebene Objektreferenz darf nicht null sein.
-     * nachbedingungen: wenn Vorname, Nachname und das Geburtsdatum beider Personen übereinstimmen wird 0 zurückgegeben. Ansonsten -1.
+     * Vorbedingungen: die übergebene Objektreferenz darf nicht null sein. Wenn doch wird eine NullPointerException geworfen.
+     * nachbedingungen: wenn Das Geburtsdatum kleiner ist, wird -1 zurückgegeben. Wenn es größer ist 1 und wenn es gleich ist 0.
      * @param personToCompare
      * @return int (Siehe Nachbedingungen.)
      */
@@ -123,17 +124,13 @@ public class Person implements Comparable {
     public int compareTo(Object personToCompare) {
         Preconditions.checkNotNull(personToCompare);
         
-        if(this.equals((Person)personToCompare)) {
-            return 0;
-        } else {
-            return -1;
-        }
+        return this.birthDate.compareTo(((Person)personToCompare).getBirthDate());
     }
     
     /**
      * Vergleicht ein Objekt Person mit dem aktuellen.
      * 
-     * Vorbedingungen: die übergebene Objektreferenz darf nicht null sein.
+     * Vorbedingungen: die übergebene Objektreferenz darf nicht null sein. Wenn doch wird eine NullPointerException geworfen.
      * nachbedingungen: wenn Vorname, Nachname und das Geburtsdatum beider Personen übereinstimmen, wird true zurückgegeben. ANsonsten false.
      * @param personToCompare
      * @return boolean (Siehe Nachbedingungen.)

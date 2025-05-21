@@ -14,12 +14,12 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- *
+ * null darf nicht als Schlüssel verwendet werden! Die Verwendung als Wert, ist ok.
  * @author infwuy396
  */
 public class PM2Map<K, V> implements Map<K, V> {
     
-    private class MapPaar<K, V> implements Map.Entry<K, V> {
+    public class MapPaar<K, V> implements Map.Entry<K, V> {
         private K key;
         private V value;
         
@@ -54,13 +54,15 @@ public class PM2Map<K, V> implements Map<K, V> {
             return oldValue;
         }
         
-        public boolean equals(MapPaar<K, V> o) {
+        @Override
+        public boolean equals(Object o) {
             return (this.getKey() == null ?
-                    o.getKey() == null : this.getKey().equals(o.getKey())) &&
+                    ((MapPaar<K, V>)o).getKey() == null : this.getKey().equals(((MapPaar<K, V>)o).getKey())) &&
                     (this.getValue() == null ?
-                    o.getValue() == null : this.getValue().equals(o.getValue()));
+                    ((MapPaar<K, V>)o).getValue() == null : this.getValue().equals(((MapPaar<K, V>)o).getValue()));
         }
         
+        @Override
         public int hashCode() {
             return (this.getKey() == null ? 0 : this.getKey().hashCode()) ^
                     (this.getValue() == null ? 0 : this.getValue().hashCode());
@@ -127,9 +129,20 @@ public class PM2Map<K, V> implements Map<K, V> {
     public V put(K key, V value) {
         Preconditions.checkNotNull(key);
         
-        V oldValue = this.get(key);
+        V oldValue = null;
+        var keyExisted = false;
         
-        if(oldValue == null) {
+        for(MapPaar<K, V> element : map) {
+            if(element != null) {
+                if(Objects.equals(element.getKey(), (K)key)) {
+                    oldValue = element.getValue();
+                    element.setValue(value);
+                    keyExisted = true;
+                }
+            }
+        }
+        
+        if(!keyExisted) {
             if(map.length < (numberOfElements + 1)) {
                 this.resize();
             }
@@ -138,8 +151,6 @@ public class PM2Map<K, V> implements Map<K, V> {
             map[(int)numberOfElements] = elementToAdd;
 
             numberOfElements++;
-        } else {
-            // Todo
         }
         
         return oldValue;
@@ -191,7 +202,7 @@ public class PM2Map<K, V> implements Map<K, V> {
     }
 
     @Override
-    public Set keySet() {
+    public Set<K> keySet() {
         HashSet<K> keySet = new HashSet((int)numberOfElements);
         
         for(MapPaar<K, V> mapPaar : map) {
@@ -204,7 +215,7 @@ public class PM2Map<K, V> implements Map<K, V> {
     }
 
     @Override
-    public Collection values() {
+    public Collection<V> values() {
         ArrayList<V> valueArrayList = new ArrayList<V>((int)numberOfElements);
         
         for(MapPaar<K, V> mapPaar : map) {
@@ -217,7 +228,7 @@ public class PM2Map<K, V> implements Map<K, V> {
     }
 
     @Override
-    public Set entrySet() {
+    public Set<Map.Entry<K, V>> entrySet() {
         HashSet<Map.Entry<K, V>> entrySet = new HashSet((int)numberOfElements);
         
         for(MapPaar<K, V> mapPaar : map) {
@@ -240,5 +251,21 @@ public class PM2Map<K, V> implements Map<K, V> {
         MapPaar<K, V>[] newMap = new MapPaar[newMapSize];
         System.arraycopy(map, 0, newMap, 0, map.length);
         map = newMap;
+    }
+    
+    @Override
+    public int hashCode() {
+        var hashCode = 0;
+        
+        for(MapPaar<K, V> mapPaar : map) {
+            hashCode += mapPaar.hashCode();
+        }
+        
+        return hashCode;
+    }
+    
+    @Override
+    public boolean equals(Object mapToCompare) {
+        return this.entrySet().equals(((Map<K, V>)mapToCompare).entrySet());
     }
 }
